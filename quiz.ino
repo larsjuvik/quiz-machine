@@ -1,5 +1,11 @@
 /// If you want to create your own questions, edit the totalQuestions-field and add
 /// your questions in the setup function as shown.
+///
+/// The questions are stored in a struct called question, which has the following fields:
+/// - question: The question itself
+/// - leftOption: The left option
+/// - rightOption: The right option
+/// - correctAnswer: true if left option is correct, false if right option is correct
 #define ButtonReadDelay 100
 #include <LiquidCrystal.h>
 LiquidCrystal lcd(12, 11, 2, 3, 4, 5);
@@ -31,6 +37,7 @@ int points = 0;
 bool gameEndedDrawn = false;       // Is final points drawn on screen?
 bool currentQuestionDrawn = false; // Is current question drawn on screen?
 
+// Handles the setup of the game
 void setup()
 {
     questions[0] = (question){"Cool project?", "No", "Yes", false};
@@ -62,6 +69,7 @@ void turnOnLEDs()
     digitalWrite(greenLEDPin, HIGH);
 }
 
+// Handles the input from the buttons
 void handleInput()
 {
     // User wants to reset
@@ -85,6 +93,7 @@ void handleInput()
     }
 }
 
+// Reads the input from the buttons
 void readInput()
 {
     // Read both buttons input (+ small delay in case user presses both buttons -> reset)
@@ -93,11 +102,11 @@ void readInput()
     buttonRightState = digitalRead(buttonRightPin);
 }
 
+// Main loop
 void loop()
 {
+    turnOffLEDs(); // TODO: refactor to only turn off when needed
     readInput();
-
-    turnOffLEDs();
 
     // Check if game has ended
     if (gameEnded() && gameEndedDrawn == false)
@@ -113,6 +122,7 @@ void loop()
     }
 }
 
+// Resets the game
 void reset()
 {
     turnOnLEDs();
@@ -125,11 +135,13 @@ void reset()
     points = 0;
 }
 
+// Returns true if game has ended
 bool gameEnded()
 {
     return currentQuestionIndex == totalQuestions;
 }
 
+// Draws the final points on the screen
 void writePointsScreen()
 {
     lcd.clear();
@@ -165,22 +177,25 @@ void guess(int questionIndex, bool g)
     delay(3000);
 }
 
-// Writes
+// Draws the current question on the screen
 void writeQuestion()
 {
     auto q = questions[currentQuestionIndex];
 
+    // Clear screen and write question
     lcd.clear();
     lcd.print(q.question);
     lcd.setCursor(0, 1);
     lcd.print(q.leftOption);
 
-    int spaces = 16 - q.leftOption.length() - q.rightOption.length();
+    // Calculate spaces between left and right option
+    int spaces = max(16 - q.leftOption.length() - q.rightOption.length(), 0);
     String spacesString;
     for (int i = 0; i < spaces; i++)
     {
         spacesString += ' ';
     }
     lcd.print(spacesString + q.rightOption);
+
     currentQuestionDrawn = true;
 }
